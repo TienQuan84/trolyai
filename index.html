@@ -2,27 +2,39 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Tra cứu TTHC Xã Bắc Ruộng</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trợ lý ảo TTHC - Xã Bắc Ruộng</title>
     <style>
-        body { font-family: sans-serif; padding: 20px; background: #f4f4f4; }
-        .search-box { max-width: 500px; margin: auto; background: white; padding: 20px; border-radius: 10px; shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        input { width: 80%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; }
-        button { padding: 10px; background: #d32f2f; color: white; border: none; cursor: pointer; border-radius: 5px; }
-        #result { margin-top: 20px; padding: 15px; background: #e3f2fd; display: none; border-left: 5px solid #2196f3; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f2f5; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .chat-container { width: 400px; height: 600px; background: white; border-radius: 15px; box-shadow: 0 5px 25px rgba(0,0,0,0.2); display: flex; flex-direction: column; overflow: hidden; }
+        .chat-header { background: #d32f2f; color: white; padding: 15px; text-align: center; font-weight: bold; }
+        .chat-box { flex: 1; padding: 15px; overflow-y: auto; background: #f9f9f9; display: flex; flex-direction: column; }
+        .msg { margin-bottom: 15px; padding: 10px 15px; border-radius: 15px; max-width: 80%; line-height: 1.5; font-size: 14px; word-wrap: break-word; }
+        .bot { background: #eeeeee; align-self: flex-start; color: #333; }
+        .user { background: #d32f2f; color: white; align-self: flex-end; }
+        .chat-input { display: flex; padding: 10px; border-top: 1px solid #ddd; background: #fff; }
+        input { flex: 1; padding: 10px; border: 1px solid #ccc; border-radius: 20px; outline: none; padding-left: 15px; }
+        button { background: #d32f2f; color: white; border: none; padding: 10px 20px; margin-left: 5px; border-radius: 20px; cursor: pointer; font-weight: bold; }
+        button:disabled { background: #ccc; }
     </style>
 </head>
 <body>
-    <div class="search-box">
-        <h3>Tra cứu thủ tục hành chính nhanh</h3>
-        <input type="text" id="keyword" placeholder="Nhập từ khóa (vđ: khai sinh)...">
-        <button onclick="search()">Tìm</button>
-        <div id="result"></div>
-    </div>
 
-    <script type="module">
+<div class="chat-container">
+    <div class="chat-header">Trợ lý ảo Hành chính - Xã Bắc Ruộng</div>
+    <div id="chatBox" class="chat-box">
+        <div class="msg bot">Xin chào! Tôi là trợ lý AI của xã Bắc Ruộng. Tôi có thể giúp gì cho bạn về thủ tục hành chính?</div>
+    </div>
+    <div class="chat-input">
+        <input type="text" id="userInput" placeholder="Nhập câu hỏi tại đây...">
+        <button id="sendBtn">Gửi</button>
+    </div>
+</div>
+
+<script type="module">
     import { GoogleGenerativeAI } from "https://esm.run/@google/generative-ai";
 
-    // 1. API KEY (Đảm bảo Key này đã được "tháo khoán" tại Google AI Studio)
+    // API Key của bạn
     const API_KEY = "AIzaSyA07How0EIokAI98lszerueehWPc03L5_o"; 
 
     const genAI = new GoogleGenerativeAI(API_KEY);
@@ -31,39 +43,56 @@
         systemInstruction: "Bạn là chuyên gia cải cách hành chính xã Bắc Ruộng. Hãy trả lời ngắn gọn, đúng luật Việt Nam. Luôn nhắc dân mang CCCD bản gốc."
     });
 
+    const chatBox = document.getElementById("chatBox");
+    const userInput = document.getElementById("userInput");
+    const sendBtn = document.getElementById("sendBtn");
+
     async function handleChat() {
-        const input = document.getElementById("userInput");
-        const chatBox = document.getElementById("chatBox");
-        const userText = input.value.trim();
+        const text = userInput.value.trim();
+        if (!text) return;
 
-        if (!userText) return;
-
-        // Hiện tin nhắn người dùng
-        chatBox.innerHTML += `<div class="msg user">${userText}</div>`;
-        input.value = "";
+        // 1. Hiển thị tin nhắn người dùng
+        chatBox.innerHTML += `<div class="msg user">${text}</div>`;
+        userInput.value = "";
+        sendBtn.disabled = true;
         chatBox.scrollTop = chatBox.scrollHeight;
 
+        // 2. Tạo tin nhắn chờ của Bot
+        const botMsgDiv = document.createElement("div");
+        botMsgDiv.className = "msg bot";
+        botMsgDiv.innerText = "Đang suy nghĩ...";
+        chatBox.appendChild(botMsgDiv);
+
         try {
-            // Gửi câu hỏi đến Gemini
-            const result = await model.generateContent(userText);
+            // 3. Gọi Gemini API
+            const result = await model.generateContent(text);
             const response = await result.response;
             const botText = response.text();
 
-            chatBox.innerHTML += `<div class="msg bot">${botText.replace(/\n/g, '<br>')}</div>`;
+            // 4. Cập nhật nội dung trả lời
+            botMsgDiv.innerHTML = botText.replace(/\n/g, '<br>');
         } catch (error) {
-            // BẮT BỆNH LỖI TẠI ĐÂY
-            let errorMsg = "Lỗi kết nối AI.";
-            if (error.message.includes("API key not valid")) errorMsg = "Mã API Key sai hoặc hết hạn.";
-            if (error.message.includes("fetch")) errorMsg = "Google chặn kết nối (Lỗi CORS). Bạn cần cấu hình lại Browser Restrictions.";
-            
-            chatBox.innerHTML += `<div class="msg bot" style="color:red">${errorMsg}</div>`;
-            console.error("Chi tiết lỗi:", error);
+            console.error("Lỗi:", error);
+            botMsgDiv.style.color = "red";
+            if (error.message.includes("fetch")) {
+                botMsgDiv.innerText = "Lỗi kết nối (CORS). Bạn cần vào Google AI Studio cấu hình Browser Restrictions là 'None'.";
+            } else {
+                botMsgDiv.innerText = "Lỗi: " + error.message;
+            }
+        } finally {
+            sendBtn.disabled = false;
+            chatBox.scrollTop = chatBox.scrollHeight;
         }
-        chatBox.scrollTop = chatBox.scrollHeight;
     }
 
-    // Gán sự kiện cho nút Gửi
-    document.getElementById("sendBtn").onclick = handleChat;
+    // Gán sự kiện cho nút bấm
+    sendBtn.addEventListener("click", handleChat);
+
+    // Hỗ trợ nhấn phím Enter để gửi
+    userInput.addEventListener("keypress", (e) => {
+        if (e.key === "Enter") handleChat();
+    });
 </script>
+
 </body>
 </html>
