@@ -14,8 +14,9 @@
         .user { background: #d32f2f; color: white; align-self: flex-end; }
         .chat-input { display: flex; padding: 12px; border-top: 1px solid #eee; }
         input { flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 20px; outline: none; }
-        button { background: #d32f2f; color: white; border: none; padding: 0 15px; margin-left: 8px; border-radius: 20px; cursor: pointer; }
-        button:disabled { background: #ccc; }
+        button { background: #d32f2f; color: white; border: none; padding: 0 15px; margin-left: 8px; border-radius: 20px; cursor: pointer; transition: 0.2s; }
+        button:hover { background: #b71c1c; }
+        button:disabled { background: #ccc; cursor: not-allowed; }
     </style>
 </head>
 <body>
@@ -40,7 +41,11 @@
     const genAI = new GoogleGenerativeAI(API_KEY);
     const model = genAI.getGenerativeModel({ 
         model: "gemini-1.5-flash",
-        systemInstruction: "Bạn là trợ lý ảo hành chính công của xã Bắc Ruộng. Hãy trả lời ngắn gọn, lịch sự, liệt kê rõ các bước/giấy tờ cần thiết dựa trên pháp luật Việt Nam. Luôn nhắc dân mang CCCD."
+        generationConfig: {
+            maxOutputTokens: 1000,
+            temperature: 0.7,
+        },
+        systemInstruction: "Bạn là trợ lý ảo hành chính công của xã Bắc Ruộng. Hãy trả lời bằng tiếng Việt, phong cách lịch sự, chuyên nghiệp. Nội dung trả lời tập trung vào các bước thực hiện, thành phần hồ sơ và thời gian giải quyết thủ tục. Luôn nhắc người dân mang theo CCCD và bản chính để đối chiếu."
     });
 
     const chatBox = document.getElementById("chatBox");
@@ -51,33 +56,35 @@
         const text = input.value.trim();
         if (!text) return;
 
-        // Hiện tin nhắn người dùng
+        // Hiển thị tin nhắn người dùng
         chatBox.innerHTML += `<div class="msg user">${text}</div>`;
         input.value = "";
-        btn.disabled = true; // Chặn bấm liên tục
+        btn.disabled = true;
         chatBox.scrollTop = chatBox.scrollHeight;
+
+        // Hiển thị trạng thái đang trả lời
+        const loadingMsg = document.createElement("div");
+        loadingMsg.className = "msg bot";
+        loadingMsg.innerText = "...";
+        chatBox.appendChild(loadingMsg);
 
         try {
             const result = await model.generateContent(text);
             const response = await result.response;
             let botText = response.text();
             
-            // Xử lý xuống dòng cho đẹp
-            botText = botText.replace(/\n/g, '<br>');
-            chatBox.innerHTML += `<div class="msg bot">${botText}</div>`;
+            // Xử lý xuống dòng và hiển thị
+            loadingMsg.innerHTML = botText.replace(/\n/g, '<br>');
         } catch (error) {
-            chatBox.innerHTML += `<div class="msg bot">Lỗi: Cần kiểm tra lại cấu hình API hoặc kết nối mạng.</div>`;
-            console.error(error);
+            loadingMsg.innerText = "Lỗi: Hiện tại hệ thống không phản hồi. Vui lòng kiểm tra lại cấu hình API tại Google AI Studio.";
+            console.error("Chi tiết lỗi:", error);
         } finally {
             btn.disabled = false;
             chatBox.scrollTop = chatBox.scrollHeight;
         }
     }
 
-    // Gán sự kiện click cho nút
     btn.addEventListener("click", handleChat);
-
-    // Gán sự kiện nhấn Enter cho ô nhập liệu
     input.addEventListener("keypress", (e) => {
         if (e.key === "Enter") handleChat();
     });
