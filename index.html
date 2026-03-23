@@ -19,22 +19,51 @@
         <div id="result"></div>
     </div>
 
-    <script src="data.js"></script> <script>
-        function search() {
-            const key = document.getElementById("keyword").value.toLowerCase();
-            const resultDiv = document.getElementById("result");
+    <script type="module">
+    import { GoogleGenerativeAI } from "https://esm.run/@google/generative-ai";
+
+    // 1. API KEY (Đảm bảo Key này đã được "tháo khoán" tại Google AI Studio)
+    const API_KEY = "AIzaSyA07How0EIokAI98lszerueehWPc03L5_o"; 
+
+    const genAI = new GoogleGenerativeAI(API_KEY);
+    const model = genAI.getGenerativeModel({ 
+        model: "gemini-1.5-flash",
+        systemInstruction: "Bạn là chuyên gia cải cách hành chính xã Bắc Ruộng. Hãy trả lời ngắn gọn, đúng luật Việt Nam. Luôn nhắc dân mang CCCD bản gốc."
+    });
+
+    async function handleChat() {
+        const input = document.getElementById("userInput");
+        const chatBox = document.getElementById("chatBox");
+        const userText = input.value.trim();
+
+        if (!userText) return;
+
+        // Hiện tin nhắn người dùng
+        chatBox.innerHTML += `<div class="msg user">${userText}</div>`;
+        input.value = "";
+        chatBox.scrollTop = chatBox.scrollHeight;
+
+        try {
+            // Gửi câu hỏi đến Gemini
+            const result = await model.generateContent(userText);
+            const response = await result.response;
+            const botText = response.text();
+
+            chatBox.innerHTML += `<div class="msg bot">${botText.replace(/\n/g, '<br>')}</div>`;
+        } catch (error) {
+            // BẮT BỆNH LỖI TẠI ĐÂY
+            let errorMsg = "Lỗi kết nối AI.";
+            if (error.message.includes("API key not valid")) errorMsg = "Mã API Key sai hoặc hết hạn.";
+            if (error.message.includes("fetch")) errorMsg = "Google chặn kết nối (Lỗi CORS). Bạn cần cấu hình lại Browser Restrictions.";
             
-            // Tìm kiếm trong kho dữ liệu
-            let found = "Không tìm thấy thủ tục này. Vui lòng liên hệ hotline xã để được hỗ trợ.";
-            for (let item in THU_TUC_DATA) {
-                if (key.includes(item)) {
-                    found = THU_TUC_DATA[item];
-                    break;
-                }
-            }
-            resultDiv.style.display = "block";
-            resultDiv.innerHTML = "<strong>Kết quả:</strong><br>" + found;
+            chatBox.innerHTML += `<div class="msg bot" style="color:red">${errorMsg}</div>`;
+            console.error("Chi tiết lỗi:", error);
         }
-    </script>
+        chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    // Gán sự kiện cho nút Gửi
+    document.getElementById("sendBtn").onclick = handleChat;
+</script>
 </body>
 </html>
