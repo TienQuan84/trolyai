@@ -9,12 +9,13 @@
         .chat-container { width: 400px; height: 600px; background: white; border-radius: 15px; box-shadow: 0 8px 30px rgba(0,0,0,0.1); display: flex; flex-direction: column; }
         .chat-header { background: #d32f2f; color: white; padding: 15px; text-align: center; font-weight: bold; border-radius: 15px 15px 0 0; }
         .chat-box { flex: 1; padding: 15px; overflow-y: auto; background: #fdfdfd; display: flex; flex-direction: column; }
-        .msg { margin-bottom: 12px; padding: 10px 14px; border-radius: 12px; max-width: 80%; font-size: 14px; line-height: 1.4; }
+        .msg { margin-bottom: 12px; padding: 10px 14px; border-radius: 12px; max-width: 80%; font-size: 14px; line-height: 1.4; word-wrap: break-word; }
         .bot { background: #f1f0f0; align-self: flex-start; color: #333; }
         .user { background: #d32f2f; color: white; align-self: flex-end; }
         .chat-input { display: flex; padding: 12px; border-top: 1px solid #eee; }
         input { flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 20px; outline: none; }
         button { background: #d32f2f; color: white; border: none; padding: 0 15px; margin-left: 8px; border-radius: 20px; cursor: pointer; }
+        button:disabled { background: #ccc; }
     </style>
 </head>
 <body>
@@ -26,45 +27,60 @@
     </div>
     <div class="chat-input">
         <input type="text" id="userInput" placeholder="Nhập câu hỏi...">
-        <button onclick="askAI()">Gửi</button>
+        <button id="sendBtn">Gửi</button>
     </div>
 </div>
 
 <script type="module">
     import { GoogleGenerativeAI } from "https://esm.run/@google/generative-ai";
 
-    // 1. DÁN API KEY CỦA BẠN VÀO ĐÂY
+    // API Key của bạn
     const API_KEY = "AIzaSyA07How0EIokAI98lszerueehWPc03L5_o";
     
     const genAI = new GoogleGenerativeAI(API_KEY);
     const model = genAI.getGenerativeModel({ 
         model: "gemini-1.5-flash",
-        systemInstruction: "Bạn là trợ lý ảo hành chính công của xã Bắc Ruộng. Hãy trả lời ngắn gọn, lịch sự, dựa trên pháp luật Việt Nam. Luôn nhắc dân mang CCCD."
+        systemInstruction: "Bạn là trợ lý ảo hành chính công của xã Bắc Ruộng. Hãy trả lời ngắn gọn, lịch sự, liệt kê rõ các bước/giấy tờ cần thiết dựa trên pháp luật Việt Nam. Luôn nhắc dân mang CCCD."
     });
 
-    window.askAI = async () => {
-        const input = document.getElementById("userInput");
-        const chatBox = document.getElementById("chatBox");
+    const chatBox = document.getElementById("chatBox");
+    const input = document.getElementById("userInput");
+    const btn = document.getElementById("sendBtn");
+
+    async function handleChat() {
         const text = input.value.trim();
         if (!text) return;
 
         // Hiện tin nhắn người dùng
         chatBox.innerHTML += `<div class="msg user">${text}</div>`;
         input.value = "";
+        btn.disabled = true; // Chặn bấm liên tục
         chatBox.scrollTop = chatBox.scrollHeight;
 
         try {
             const result = await model.generateContent(text);
             const response = await result.response;
-            const botText = response.text();
+            let botText = response.text();
             
+            // Xử lý xuống dòng cho đẹp
+            botText = botText.replace(/\n/g, '<br>');
             chatBox.innerHTML += `<div class="msg bot">${botText}</div>`;
         } catch (error) {
-            chatBox.innerHTML += `<div class="msg bot">Lỗi: Kiểm tra lại API Key hoặc mạng.</div>`;
+            chatBox.innerHTML += `<div class="msg bot">Lỗi: Cần kiểm tra lại cấu hình API hoặc kết nối mạng.</div>`;
             console.error(error);
+        } finally {
+            btn.disabled = false;
+            chatBox.scrollTop = chatBox.scrollHeight;
         }
-        chatBox.scrollTop = chatBox.scrollHeight;
     }
+
+    // Gán sự kiện click cho nút
+    btn.addEventListener("click", handleChat);
+
+    // Gán sự kiện nhấn Enter cho ô nhập liệu
+    input.addEventListener("keypress", (e) => {
+        if (e.key === "Enter") handleChat();
+    });
 </script>
 
 </body>
