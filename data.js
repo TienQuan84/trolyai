@@ -1,9 +1,9 @@
 const dataAnswers = [
     {
-        question: "Thủ tục Đăng ký khai sinh lưu động",
+        question: "Thủ tục Đăng ký khai sinh",
         category: "Hộ tịch",
         answer: "Cần chuẩn bị: Tờ khai theo mẫu, Giấy chứng sinh. Trường hợp không có giấy chứng sinh thì nộp văn bản của người làm chứng xác nhận về việc sinh.",
-        driveLink: "https://drive.google.com/uc?export=download&id=FILE_ID_CUA_BAN" 
+        driveLink: "https://drive.google.com/uc?export=download&id=1lwZ6HI8Mcu8fqXi0TQoOIkIlxSO0cNv9" 
     },
     {
         question: "Cấp giấy xác nhận tình trạng hôn nhân",
