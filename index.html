@@ -3,147 +3,184 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trợ Lý Hành Chính AI - Bảo Mật</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Hệ Thống Tra Cứu Thủ Tục Hành Chính 2026</title>
     <style>
-        .chat-container { height: 55vh; overflow-y: auto; }
-        .loading { display: none; }
+        :root {
+            --gov-blue: #003366; /* Màu xanh hành chính */
+            --gov-red: #da251d;  /* Màu đỏ cờ/điểm nhấn */
+            --bg-color: #f0f2f5;
+        }
+
+        body { 
+            font-family: 'Segoe UI', Arial, sans-serif; 
+            line-height: 1.6; 
+            margin: 0;
+            padding: 20px; 
+            background-color: var(--bg-color);
+        }
+
+        .container { 
+            max-width: 900px; 
+            margin: 0 auto; 
+            background: white; 
+            padding: 30px; 
+            border-radius: 8px; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            border-top: 5px solid var(--gov-red);
+        }
+
+        .header-area { text-align: center; margin-bottom: 30px; }
+        .header-area h1 { color: var(--gov-blue); text-transform: uppercase; margin: 10px 0; font-size: 24px; }
+        .header-area p { color: #666; font-style: italic; }
+
+        .search-box {
+            width: 100%;
+            padding: 15px;
+            margin-bottom: 25px;
+            border: 2px solid #ddd;
+            border-radius: 50px; /* Bo tròn hiện đại */
+            box-sizing: border-box;
+            font-size: 16px;
+            outline: none;
+            transition: 0.3s;
+        }
+
+        .search-box:focus { border-color: var(--gov-blue); box-shadow: 0 0 8px rgba(0,51,102,0.2); }
+
+        .item { 
+            border: 1px solid #dee2e6;
+            margin-bottom: 12px; 
+            border-radius: 6px;
+            transition: 0.2s;
+        }
+
+        .question-header { 
+            padding: 15px 20px;
+            background: #fff;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: bold;
+            color: var(--gov-blue);
+        }
+
+        .question-header:hover { background: #f8f9fa; }
+
+        .answer-content { 
+            padding: 0 20px;
+            max-height: 0;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            background: #fff;
+        }
+
+        .active .answer-content { 
+            padding: 15px 20px;
+            max-height: 1000px;
+            border-top: 1px dashed #ccc;
+        }
+
+        .active .question-header { background: #eef2ff; }
+
+        .btn-drive {
+            display: inline-flex;
+            align-items: center;
+            margin-top: 15px;
+            padding: 10px 20px;
+            background-color: #2d8c3c;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            font-weight: 500;
+        }
+
+        .btn-drive:hover { background-color: #21632c; }
+
+        .tag {
+            font-size: 11px;
+            background: var(--gov-blue);
+            color: white;
+            padding: 3px 10px;
+            border-radius: 4px;
+            text-transform: uppercase;
+        }
+
+        footer { text-align: center; margin-top: 30px; color: #888; font-size: 13px; }
     </style>
 </head>
-<body class="bg-slate-100 min-h-screen flex items-center justify-center p-4">
+<body>
 
-    <div class="bg-white w-full max-w-2xl rounded-2xl shadow-xl flex flex-col overflow-hidden border border-gray-200">
-        <div class="bg-indigo-700 p-5 text-white flex justify-between items-center">
-            <div>
-                <h1 class="text-xl font-bold font-sans">🤖 Trợ Lý Hành Chính Công</h1>
-                <p class="text-xs opacity-70">Sử dụng mô hình Gemini 1.5 Flash</p>
-            </div>
-            <button onclick="clearKey()" class="text-[10px] bg-indigo-800 hover:bg-red-600 px-2 py-1 rounded transition">Đổi API Key</button>
-        </div>
-
-        <div id="setupBox" class="p-6 bg-yellow-50 border-b border-yellow-100 hidden">
-            <label class="block text-sm font-medium text-yellow-800 mb-2">Nhập Gemini API Key để bắt đầu:</label>
-            <div class="flex gap-2">
-                <input type="password" id="apiKeyInput" placeholder="AIzaSy..." 
-                    class="flex-1 p-2 border border-yellow-300 rounded focus:ring-2 focus:ring-yellow-500 outline-none text-sm">
-                <button onclick="saveKey()" class="bg-yellow-600 text-white px-4 py-2 rounded hover:bg-yellow-700 transition text-sm font-bold">Lưu</button>
-            </div>
-            <p class="text-[10px] mt-2 text-yellow-700 italic text-center">* Key được lưu an toàn tại trình duyệt của bạn, không gửi lên máy chủ GitHub.</p>
-        </div>
-
-        <div id="chatBox" class="chat-container p-6 space-y-4 bg-slate-50">
-            <div class="bg-indigo-100 text-indigo-900 p-3 rounded-2xl rounded-tl-none max-w-[85%] text-sm shadow-sm">
-                Chào bạn! Tôi có thể hỗ trợ các thủ tục: Làm hộ chiếu, CCCD, đăng ký kinh doanh, BHXH... Bạn cần hỏi gì?
-            </div>
-        </div>
-
-        <div id="loader" class="loading px-6 py-2">
-            <div class="flex items-center space-x-2">
-                <div class="w-2 h-2 bg-indigo-400 rounded-full animate-bounce"></div>
-                <div class="w-2 h-2 bg-indigo-400 rounded-full animate-bounce [animation-delay:-.3s]"></div>
-                <div class="w-2 h-2 bg-indigo-400 rounded-full animate-bounce [animation-delay:-.5s]"></div>
-                <span class="text-xs text-gray-400">Gemini đang tra cứu...</span>
-            </div>
-        </div>
-
-        <div class="p-4 border-t border-gray-100 bg-white">
-            <div class="flex gap-2">
-                <input type="text" id="userInput" 
-                    placeholder="Ví dụ: Thủ tục cấp lại thẻ BHYT bị mất?" 
-                    class="flex-1 p-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 transition shadow-sm text-sm">
-                <button onclick="sendMessage()" 
-                    class="bg-indigo-600 text-white px-5 py-3 rounded-xl hover:bg-indigo-700 transition shadow-md">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                        <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z" />
-                    </svg>
-                </button>
-            </div>
-        </div>
+<div class="container">
+    <div class="header-area">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/a/a1/Emblem_of_Vietnam.svg" alt="Quốc huy" width="80">
+        <h1>Tra Cứu Thủ Tục Hành Chính Công</h1>
+        <p>Hệ thống hướng dẫn và cung cấp biểu mẫu tự động</p>
     </div>
+    
+    <input type="text" id="searchInput" class="search-box" placeholder="Nhập tên thủ tục hoặc từ khóa (ví dụ: khai sinh, hộ khẩu...)" onkeyup="filterData()">
 
-    <script>
-        // Kiểm tra xem đã có API Key chưa
-        window.onload = () => {
-            const savedKey = localStorage.getItem('gemini_api_key');
-            if (!savedKey) {
-                document.getElementById('setupBox').classList.remove('hidden');
-            }
-        };
+    <div id="content"></div>
 
-        function saveKey() {
-            const key = document.getElementById('apiKeyInput').value.trim();
-            if (key) {
-                localStorage.setItem('gemini_api_key', key);
-                document.getElementById('setupBox').classList.add('hidden');
-                alert("Đã lưu API Key thành công!");
-            }
+    <footer>
+        &copy; 2026 Hệ thống hỗ trợ dịch vụ công trực tuyến
+    </footer>
+</div>
+
+<script src="data.js"></script>
+
+<script>
+    const contentDiv = document.getElementById('content');
+
+    function renderData(items) {
+        if (items.length === 0) {
+            contentDiv.innerHTML = "<div style='text-align:center; padding:20px; color:red;'>Rất tiếc, không tìm thấy thủ tục này. Vui lòng thử từ khóa khác.</div>";
+            return;
         }
 
-        function clearKey() {
-            localStorage.removeItem('gemini_api_key');
-            location.reload();
+        contentDiv.innerHTML = items.map((item, index) => `
+            <div class="item" id="item-${index}">
+                <div class="question-header" onclick="toggleItem(${index})">
+                    <span>${item.question}</span>
+                    <span class="tag">${item.category}</span>
+                </div>
+                <div class="answer-content">
+                    <div style="color: #444; margin-bottom: 10px;"><strong>Hướng dẫn:</strong></div>
+                    <p>${item.answer}</p>
+                    ${item.driveLink ? `
+                        <a href="${item.driveLink}" target="_blank" class="btn-drive">
+                            <span>📄 Tải biểu mẫu/Xem tài liệu</span>
+                        </a>
+                    ` : ''}
+                </div>
+            </div>
+        `).join('');
+    }
+
+    function toggleItem(index) {
+        const el = document.getElementById(`item-${index}`);
+        const isActive = el.classList.contains('active');
+        
+        // Đóng tất cả các mục khác trước khi mở mục mới (Accordion mode)
+        document.querySelectorAll('.item').forEach(i => i.classList.remove('active'));
+        
+        if (!isActive) {
+            el.classList.add('active');
         }
+    }
 
-        async function sendMessage() {
-            const apiKey = localStorage.getItem('gemini_api_key');
-            if (!apiKey) {
-                alert("Vui lòng nhập API Key trước!");
-                document.getElementById('setupBox').classList.remove('hidden');
-                return;
-            }
+    function filterData() {
+        const keyword = document.getElementById('searchInput').value.toLowerCase();
+        const filtered = dataAnswers.filter(item => 
+            item.question.toLowerCase().includes(keyword) || 
+            item.answer.toLowerCase().includes(keyword) ||
+            item.category.toLowerCase().includes(keyword)
+        );
+        renderData(filtered);
+    }
 
-            const input = document.getElementById('userInput');
-            const chatBox = document.getElementById('chatBox');
-            const loader = document.getElementById('loader');
-            const message = input.value.trim();
+    window.onload = () => renderData(dataAnswers);
+</script>
 
-            if (!message) return;
-
-            appendMessage(message, 'user');
-            input.value = '';
-            loader.style.display = 'block';
-
-            try {
-                const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
-                const response = await fetch(url, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        contents: [{ parts: [{ text: `Bạn là trợ lý pháp luật chuyên về thủ tục hành chính Việt Nam. Trả lời chi tiết và có cấu trúc cho câu hỏi: ${message}` }] }]
-                    })
-                });
-
-                const data = await response.json();
-                if (data.error) throw new Error(data.error.message);
-
-                const aiResponse = data.candidates[0].content.parts[0].text;
-                appendMessage(aiResponse, 'ai');
-            } catch (error) {
-                appendMessage(`⚠️ Lỗi: ${error.message}. Hãy kiểm tra lại API Key hoặc mạng.`, 'ai');
-            } finally {
-                loader.style.display = 'none';
-            }
-        }
-
-        function appendMessage(text, sender) {
-            const chatBox = document.getElementById('chatBox');
-            const msgDiv = document.createElement('div');
-            
-            if (sender === 'user') {
-                msgDiv.className = "ml-auto bg-indigo-600 text-white p-3 rounded-2xl rounded-tr-none max-w-[85%] text-sm shadow-md";
-            } else {
-                msgDiv.className = "bg-white text-gray-800 p-3 rounded-2xl rounded-tl-none max-w-[85%] text-sm shadow-sm border border-gray-100 leading-relaxed";
-            }
-            
-            // Chuyển đổi ký tự xuống dòng
-            msgDiv.innerHTML = text.replace(/\n/g, '<br>');
-            chatBox.appendChild(msgDiv);
-            chatBox.scrollTop = chatBox.scrollHeight;
-        }
-
-        document.getElementById('userInput').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') sendMessage();
-        });
-    </script>
 </body>
 </html>
