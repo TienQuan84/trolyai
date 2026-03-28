@@ -38,7 +38,7 @@
             padding: 15px;
             margin-bottom: 25px;
             border: 2px solid #ddd;
-            border-radius: 50px; /* Bo tròn hiện đại */
+            border-radius: 50px;
             box-sizing: border-box;
             font-size: 16px;
             outline: none;
@@ -115,10 +115,10 @@
     <div class="header-area">
         <img src="https://upload.wikimedia.org/wikipedia/commons/a/a1/Emblem_of_Vietnam.svg" alt="Quốc huy" width="80">
         <h1>Tra Cứu Thủ Tục Hành Chính Công</h1>
-        <p>Hệ thống hướng dẫn và cung cấp biểu mẫu tự động</p>
+        <p>Hệ thống hướng dẫn và cung cấp biểu mẫu tự động 2026</p>
     </div>
     
-    <input type="text" id="searchInput" class="search-box" placeholder="Nhập tên thủ tục hoặc từ khóa (ví dụ: khai sinh, hộ khẩu...)" onkeyup="filterData()">
+    <input type="text" id="searchInput" class="search-box" placeholder="Nhập tên thủ tục hoặc từ khóa cần tìm..." onkeyup="filterData()">
 
     <div id="content"></div>
 
@@ -127,14 +127,41 @@
     </footer>
 </div>
 
-<script src="data.js"></script>
-
 <script>
+    // --- PHẦN DỮ LIỆU (Bạn thay đổi nội dung ở đây) ---
+    const dataAnswers = [
+        {
+            question: "Thủ tục Đăng ký khai sinh lưu động",
+            category: "Hộ tịch",
+            answer: "Chuẩn bị: Tờ khai theo mẫu, Giấy chứng sinh hoặc văn bản xác nhận của người làm chứng. Nộp tại UBND xã/phường.",
+            driveLink: "https://drive.google.com/your-link-here"
+        },
+        {
+            question: "Cấp giấy xác nhận tình trạng hôn nhân",
+            category: "Hộ tịch",
+            answer: "Thời gian giải quyết: Trong ngày làm việc. Nếu cần xác minh thì không quá 03 ngày.",
+            driveLink: "https://drive.google.com/your-link-here"
+        },
+        {
+            question: "Đăng ký biến động quyền sử dụng đất",
+            category: "Đất đai",
+            answer: "Hồ sơ gồm: Đơn đăng ký biến động, Giấy chứng nhận quyền sử dụng đất (bản gốc), Hợp đồng chuyển nhượng/tặng cho.",
+            driveLink: "https://drive.google.com/your-link-here"
+        },
+        {
+            question: "Danh sách cử tri Thôn 1 - Bầu cử 2026",
+            category: "Bầu cử",
+            answer: "Danh sách niêm yết chính thức các cử tri đủ điều kiện tham gia bỏ phiếu tại khu vực Thôn 1.",
+            driveLink: "https://drive.google.com/your-link-here"
+        }
+    ];
+
+    // --- PHẦN XỬ LÝ HỆ THỐNG ---
     const contentDiv = document.getElementById('content');
 
     function renderData(items) {
         if (items.length === 0) {
-            contentDiv.innerHTML = "<div style='text-align:center; padding:20px; color:red;'>Rất tiếc, không tìm thấy thủ tục này. Vui lòng thử từ khóa khác.</div>";
+            contentDiv.innerHTML = "<div style='text-align:center; padding:20px; color:red;'>Không tìm thấy kết quả phù hợp.</div>";
             return;
         }
 
@@ -161,7 +188,7 @@
         const el = document.getElementById(`item-${index}`);
         const isActive = el.classList.contains('active');
         
-        // Đóng tất cả các mục khác trước khi mở mục mới (Accordion mode)
+        // Đóng các mục khác để tạo hiệu ứng chuyên nghiệp
         document.querySelectorAll('.item').forEach(i => i.classList.remove('active'));
         
         if (!isActive) {
@@ -179,6 +206,7 @@
         renderData(filtered);
     }
 
+    // Chạy hiển thị lần đầu
     window.onload = () => renderData(dataAnswers);
 </script>
 
