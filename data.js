@@ -1,5 +1,20 @@
-const THU_TUC_DATA = {
-    "khai sinh": "Hồ sơ gồm: Giấy chứng sinh, CCCD cha mẹ. Thời gian: Trong ngày. Lệ phí: Miễn phí.",
-    "kết hôn": "Hồ sơ gồm: Tờ khai đăng ký, CCCD 2 bên, Giấy xác nhận tình trạng hôn nhân. Lưu ý: Cả 2 phải có mặt.",
-    "đất đai": "Vui lòng liên hệ bộ phận địa chính tại tầng 1 để được đo đạc và hướng dẫn nộp hồ sơ sổ đỏ."
-};
+const dataAnswers = [
+    {
+        question: "Thủ tục Đăng ký khai sinh lưu động",
+        category: "Hộ tịch",
+        answer: "Cần chuẩn bị: Tờ khai theo mẫu, Giấy chứng sinh. Trường hợp không có giấy chứng sinh thì nộp văn bản của người làm chứng xác nhận về việc sinh.",
+        driveLink: "https://drive.google.com/uc?export=download&id=FILE_ID_CUA_BAN" 
+    },
+    {
+        question: "Cấp giấy xác nhận tình trạng hôn nhân",
+        category: "Hộ tịch",
+        answer: "Thời gian giải quyết: Trong ngày làm việc. Phí, lệ phí: Theo quy định của HĐND cấp tỉnh.",
+        driveLink: "https://drive.google.com/file/d/FILE_ID_CUA_BAN/view"
+    },
+    {
+        question: "Quy trình bầu cử Trưởng thôn 2026",
+        category: "Bầu cử",
+        answer: "Xem chi tiết hướng dẫn về công tác nhân sự và quy trình bỏ phiếu tại đơn vị bầu cử địa phương.",
+        driveLink: "https://drive.google.com/drive/folders/FOLDER_ID_CUA_BAN"
+    }
+];
